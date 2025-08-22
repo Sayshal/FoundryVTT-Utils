@@ -109,9 +109,12 @@ class LocalizationAnalyzer {
     if (this.shouldDelete) console.log('DELETE MODE: Unused keys will be removed!');
 
     const localizationKeys = this.loadLocalizationFile();
-    const files = this.getAllFiles(this.config.searchFolder);
+    const allFiles = this.getAllFiles(this.config.searchFolder);
 
-    console.log(`Loaded ${Object.keys(localizationKeys).length} keys from ${files.length} files`);
+    const localizationFilePath = path.resolve(this.config.localizationFile);
+    const files = allFiles.filter((filePath) => path.resolve(filePath) !== localizationFilePath);
+
+    console.log(`Loaded ${Object.keys(localizationKeys).length} keys from ${allFiles.length} files (excluding ${path.basename(localizationFilePath)})`);
 
     const results = { used: [], unused: [], missing: [], total: Object.keys(localizationKeys).length };
     let processed = 0;
@@ -146,17 +149,11 @@ class LocalizationAnalyzer {
         results.missing.length === 0 ?
           'No missing keys found!\n'
         : results.missing
-            .map(
-              ({ key, usages }) =>
-                `"${key}": "",  // ADD THIS KEY\n${usages.map((u) => u.occurrences.map((occ) => `    ${u.file}:${occ.line} - ${occ.context}`).join('\n')).join('\n')}`
-            )
+            .map(({ key, usages }) => `"${key}": "",  // ADD THIS KEY\n${usages.map((u) => u.occurrences.map((occ) => `    ${u.file}:${occ.line} - ${occ.context}`).join('\n')).join('\n')}`)
             .join('\n\n') + '\n'
       ],
 
-      unused: [
-        `## UNUSED KEYS (${results.unused.length})`,
-        results.unused.length === 0 ? 'No unused keys found!\n' : results.unused.map(({ key, value }) => `"${key}": "${value}"`).join('\n') + '\n'
-      ],
+      unused: [`## UNUSED KEYS (${results.unused.length})`, results.unused.length === 0 ? 'No unused keys found!\n' : results.unused.map(({ key, value }) => `"${key}": "${value}"`).join('\n') + '\n'],
 
       used: [
         `## USED KEYS (${results.used.length})`,
