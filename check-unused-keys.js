@@ -146,11 +146,11 @@ class LocalizationAnalyzer {
 
       missing: [
         `## MISSING KEYS (${results.missing.length})`,
-        results.missing.length === 0 ?
-          'No missing keys found!\n'
-        : results.missing
-            .map(({ key, usages }) => `"${key}": "",  // ADD THIS KEY\n${usages.map((u) => u.occurrences.map((occ) => `    ${u.file}:${occ.line} - ${occ.context}`).join('\n')).join('\n')}`)
-            .join('\n\n') + '\n'
+        results.missing.length === 0
+          ? 'No missing keys found!\n'
+          : results.missing
+              .map(({ key, usages }) => `"${key}": "",  // ADD THIS KEY\n${usages.map((u) => u.occurrences.map((occ) => `    ${u.file}:${occ.line} - ${occ.context}`).join('\n')).join('\n')}`)
+              .join('\n\n') + '\n'
       ],
 
       unused: [`## UNUSED KEYS (${results.unused.length})`, results.unused.length === 0 ? 'No unused keys found!\n' : results.unused.map(({ key, value }) => `"${key}": "${value}"`).join('\n') + '\n'],

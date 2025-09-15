@@ -309,10 +309,7 @@ class FunctionAnalyzer {
 
       // Regular methods, getters, setters
       if (t.isIdentifier(method.key)) {
-        const prefix =
-          method.kind === 'get' ? 'get '
-          : method.kind === 'set' ? 'set '
-          : '';
+        const prefix = method.kind === 'get' ? 'get ' : method.kind === 'set' ? 'set ' : '';
         return { name: `${prefix}${method.key.name}`, shouldTrack: true };
       }
 
@@ -329,10 +326,7 @@ class FunctionAnalyzer {
       const method = path.parent;
 
       if (t.isIdentifier(method.key)) {
-        const prefix =
-          method.kind === 'get' ? 'get '
-          : method.kind === 'set' ? 'set '
-          : '';
+        const prefix = method.kind === 'get' ? 'get ' : method.kind === 'set' ? 'set ' : '';
         return { name: `${prefix}${method.key.name}`, shouldTrack: true };
       }
 
