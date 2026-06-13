@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Creates symlinks from foundry-dev modules to a Foundry VTT Data directory.
- * - dnd5e and draw-steel go to <target>/systems/
- * - All other modules go to <target>/modules/
+ * - Packages with system.json go to <target>/systems/
+ * - Packages with module.json go to <target>/modules/
  * - Existing folders are deleted before symlinking
  *
  * Usage: node ./tools/create-symlinks.mjs <foundry-data-path>
@@ -13,16 +13,18 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SYSTEMS = ['dnd5e', 'draw-steel'];
-const IGNORE = ['node_modules', '.git', '.vscode', 'foundry'];
+const IGNORE = ['node_modules', '.git', '.vscode', 'foundry', 'FoundryVTT-Utils'];
+const DIST_MODULES = ['calendaria'];
 
 /**
- * Checks if a directory contains a module.json or system.json file.
+ * Determines the package type by checking for system.json or module.json.
  * @param {string} dirPath - Path to check
- * @returns {boolean}
+ * @returns {"system"|"module"|null}
  */
-function isFoundryPackage(dirPath) {
-  return fs.existsSync(path.join(dirPath, 'module.json')) || fs.existsSync(path.join(dirPath, 'system.json'));
+function getPackageType(dirPath) {
+  if (fs.existsSync(path.join(dirPath, 'system.json'))) return 'system';
+  if (fs.existsSync(path.join(dirPath, 'module.json'))) return 'module';
+  return null;
 }
 
 /**
@@ -82,13 +84,15 @@ function main() {
   for (const dir of dirs) {
     const sourcePath = path.join(sourceDir, dir);
 
-    if (!isFoundryPackage(sourcePath)) continue;
+    const packageType = getPackageType(sourcePath);
+    if (!packageType) continue;
 
-    const isSystem = SYSTEMS.includes(dir);
-    const targetDir = isSystem ? systemsDir : modulesDir;
+    const hasDist = DIST_MODULES.includes(dir);
+    const linkSource = hasDist ? path.join(sourcePath, 'dist') : sourcePath;
+    const targetDir = packageType === 'system' ? systemsDir : modulesDir;
     const targetPath = path.join(targetDir, dir);
 
-    createSymlink(sourcePath, targetPath);
+    createSymlink(linkSource, targetPath);
     linked++;
   }
 
